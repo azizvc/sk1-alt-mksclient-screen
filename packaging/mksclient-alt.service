@@ -1,0 +1,15 @@
+[Unit]
+Description=TwoTrees SK1 LKS touchscreen client
+After=moonraker.service
+
+[Service]
+Type=simple
+User=mks
+SupplementaryGroups=dialout
+EnvironmentFile=-/etc/mksclient-alt.env
+ExecStart=/opt/mksclient-alt/.venv/bin/python -m mksclient_alt --serial /dev/ttyS1 --moonraker http://127.0.0.1:7125 $MKSCLIENT_ALT_ARGS
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

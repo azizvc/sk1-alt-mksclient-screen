@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sk1-alt-mksclient-screen"
+version = "0.1.0"
+description = "UART client for the TwoTrees SK1 LKS display and Moonraker"
+requires-python = ">=3.7"
+dependencies = ["aiohttp>=3.8,<4", "pyserial>=3.5,<4", "Pillow>=9"]
+
+[project.scripts]
+mksclient-alt = "mksclient_alt.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["mksclient_alt*"]
