@@ -1,5 +1,7 @@
 # sk1-alt-mksclient-screen
 
+![TwoTrees SK1 touchscreen showing Klipper v0.14.0](docs/sk1-screen-klipper-0.14.0.png)
+
 **Keep the built-in TwoTrees SK1 touchscreen working with current releases of Moonraker and Klipper.** This replacement host client talks to the SK1's factory LKS TJC display over UART and to Moonraker over its JSON-RPC WebSocket API. It discovers the Klipper objects available on the printer and renews its subscriptions after reconnecting.
 
 The client supports the factory LKS display firmware and the amber panel project reconstructed from it. The separate custom HMI in the [sk1-hmi project](https://github.com/azizvc/sk1-hmi) uses a different serial map. This repository contains the host client, tests, and protocol documentation.
