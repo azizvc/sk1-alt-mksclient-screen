@@ -43,13 +43,13 @@ systemctl list-units --type=service --all | grep -E 'makerbase-client|sk1-hmi|mk
 systemctl list-unit-files --type=service | grep -E 'makerbase-client|sk1-hmi|mksclient-alt'
 ```
 
-Set `old_service` to the active display service you identified. Run these commands from `/opt/mksclient-alt`.
+If another display service is active, stop that specific unit before starting the new client. For example, run `sudo systemctl stop makerbase-client.service` only if that unit exists and is active. If you get `Unit makerbase-client.service not loaded`, your SK1 uses a different unit or has no previous display service. If the UART is busy and neither example matches, run `sudo fuser -v /dev/ttyS1` if `fuser` is available to identify the process holding the port.
+
+Run these commands from `/opt/mksclient-alt`.
 
 ```sh
-old_service=makerbase-client.service  # Replace if your SK1 uses a different display service.
 sudo install -m 0644 packaging/mksclient-alt.service /etc/systemd/system/mksclient-alt.service
 sudo systemctl daemon-reload
-sudo systemctl stop "$old_service"
 sudo systemctl start mksclient-alt.service
 sudo systemctl status mksclient-alt.service --no-pager
 sudo journalctl -u mksclient-alt.service -n 50 --no-pager
@@ -57,16 +57,19 @@ sudo journalctl -u mksclient-alt.service -n 50 --no-pager
 
 Check that the screen shows live temperatures and opens the local file list. Test these in the default read-only mode. The `dialout` group grants UART access in the included service. Wi-Fi controls also require the `mks` user to have access to the wpa_supplicant control socket.
 
-Once the screen responds, configure the services for the next boot.
+Once the screen responds, enable the new service at boot. The first check should report `enabled`, and the second should report `active`.
 
 ```sh
-sudo systemctl disable "$old_service"
-sudo systemctl enable mksclient-alt.service
+sudo systemctl enable --now mksclient-alt.service
+systemctl is-enabled mksclient-alt.service
+systemctl is-active mksclient-alt.service
 ```
+
+If an existing previous display service was enabled at boot, disable that specific unit to keep both clients from opening the UART after a reboot. If the screen stops working after reboot, check the current boot log with `sudo journalctl -b -u mksclient-alt.service --no-pager`.
 
 ### 3. Enable controls if needed
 
-To allow the touchscreen to send printer commands, edit `/etc/mksclient-alt.env` with `sudoedit` and add the following line. If `MKSCLIENT_ALT_ARGS` already exists, append `--enable-controls` to its value.
+The service runs in read-only mode without `/etc/mksclient-alt.env`. To allow touchscreen control, create or edit the optional file with `sudoedit /etc/mksclient-alt.env` and add the following line. If `MKSCLIENT_ALT_ARGS` already exists, append `--enable-controls` to its value.
 
 ```ini
 MKSCLIENT_ALT_ARGS="--enable-controls"
@@ -76,14 +79,7 @@ Apply the change with `sudo systemctl restart mksclient-alt.service`. Test the c
 
 ### Restore the previous screen client
 
-If the new client fails to start or the screen does not respond, disable it and start the previous service. Set `old_service` again if you are in a new SSH session.
-
-```sh
-sudo systemctl disable --now mksclient-alt.service
-sudo systemctl start "$old_service"
-```
-
-If the previous service had been enabled at boot, restore that setting with `sudo systemctl enable "$old_service"`.
+If the new client fails to start or the screen does not respond, run `sudo systemctl disable --now mksclient-alt.service`. If this installation replaced a display service, start that specific unit again. If it had been enabled at boot, restore that setting with `sudo systemctl enable <previous-service>`, substituting its actual unit name.
 
 ## Network
 
