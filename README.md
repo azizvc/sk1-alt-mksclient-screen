@@ -55,7 +55,7 @@ sudo systemctl status mksclient-alt.service --no-pager
 sudo journalctl -u mksclient-alt.service -n 50 --no-pager
 ```
 
-Check that the screen shows live temperatures and opens the local file list. Test these in the default read-only mode. The `dialout` group grants UART access in the included service. Wi-Fi controls also require the `mks` user to have access to the wpa_supplicant control socket.
+Check that the screen shows live temperatures and opens the local file list. The touchscreen controls are enabled by default. The `dialout` group grants UART access in the included service. Wi-Fi controls also require the `mks` user to have access to the wpa_supplicant control socket.
 
 Once the screen responds, enable the new service at boot. The first check should report `enabled`, and the second should report `active`.
 
@@ -67,15 +67,17 @@ systemctl is-active mksclient-alt.service
 
 If an existing previous display service was enabled at boot, disable that specific unit to keep both clients from opening the UART after a reboot. If the screen stops working after reboot, check the current boot log with `sudo journalctl -b -u mksclient-alt.service --no-pager`.
 
-### 3. Enable controls if needed
+### Optional read-only mode
 
-The service runs in read-only mode without `/etc/mksclient-alt.env`. To allow touchscreen control, create or edit the optional file with `sudoedit /etc/mksclient-alt.env` and add the following line. If `MKSCLIENT_ALT_ARGS` already exists, append `--enable-controls` to its value.
+Printer controls work with the default service configuration. Use read-only mode to keep temperatures, progress, and files visible while blocking printer commands from the screen.
+
+To enable read-only mode, create or edit the optional file with `sudoedit /etc/mksclient-alt.env` and add `--read-only` to `MKSCLIENT_ALT_ARGS`. If the value already contains `--enable-controls`, remove that flag before adding `--read-only`.
 
 ```ini
-MKSCLIENT_ALT_ARGS="--enable-controls"
+MKSCLIENT_ALT_ARGS="--read-only"
 ```
 
-Apply the change with `sudo systemctl restart mksclient-alt.service`. Test the controls with the printer idle and refer to the [hardware validation plan](docs/LKS-VALIDATION.md). Jogging checks the homed axes and travel limits reported by Klipper.
+Apply the change with `sudo systemctl restart mksclient-alt.service`.
 
 ### Restore the previous screen client
 

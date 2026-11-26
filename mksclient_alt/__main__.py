@@ -119,7 +119,11 @@ def main():
     parser.add_argument("--moonraker", default="http://127.0.0.1:7125", metavar="URL")
     parser.add_argument("--display-ip", default="", help="IP exibido na página de rede ao usar Moonraker local")
     parser.add_argument("--wifi-socket", default=DEFAULT_SOCKET, help="Socket local do wpa_supplicant")
-    parser.add_argument("--enable-controls", action="store_true", help="Habilita comandos de controle pela tela")
+    controls = parser.add_mutually_exclusive_group()
+    controls.add_argument("--read-only", dest="enable_controls", action="store_false",
+                          help="Desativa comandos de controle pela tela")
+    controls.add_argument("--enable-controls", action="store_true", help=argparse.SUPPRESS)
+    parser.set_defaults(enable_controls=None)
     parser.add_argument("--no-thumbnails", action="store_true",
                         default=os.environ.get("MKSCLIENT_ALT_DISABLE_THUMBNAILS") == "1",
                         help="Desativa o envio de miniaturas ao TFT na lista de arquivos")
@@ -130,6 +134,8 @@ def main():
         parser.error("--moonraker deve ser uma URL HTTP(S) sem credenciais, consulta ou fragmento")
     if args.probe and args.enable_controls:
         parser.error("--enable-controls requer --serial")
+    if args.enable_controls is None:
+        args.enable_controls = not args.probe
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format="%(levelname)s %(name)s: %(message)s")
     try:
